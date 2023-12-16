@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { getBlogPosts } from "../api/api";
+import { getBlogPosts, createBlogPost } from "../api/api";
 
 // Define the type for a blog post
 interface BlogPost {
@@ -20,6 +20,27 @@ const BlogPostCard: React.FC<BlogPost> = ({ id, title, content }) => (
 
 const Home: React.FC = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+
+  const [newPostTitle, setNewPostTitle] = useState("");
+  const [newPostContent, setNewPostContent] = useState("");
+
+  const handleCreatePost = async () => {
+    try {
+      // Make API request to create new post
+      // You need to implement this function in your API
+      await createBlogPost({ title: newPostTitle, content: newPostContent });
+
+      // Fetch and update the list of blog posts
+      const posts = await getBlogPosts();
+      setBlogPosts(posts);
+
+      // Clear the form fields after successful submission
+      setNewPostTitle("");
+      setNewPostContent("");
+    } catch (error) {
+      console.error("Error creating blog post:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchBlogPosts = async () => {
@@ -54,6 +75,58 @@ const Home: React.FC = () => {
         ) : (
           <p className="text-center text-gray-600">Loading blog posts...</p>
         )}
+
+        <form
+          className="bg-white p-4 rounded-lg shadow-md max-w-sm mx-auto"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleCreatePost();
+          }}
+        >
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">
+            Create New Post
+          </h2>
+          <div className="mb-4">
+            <label
+              htmlFor="postTitle"
+              className="block text-sm font-medium text-gray-600"
+            >
+              Title
+            </label>
+            <input
+              type="text"
+              id="postTitle"
+              name="postTitle"
+              value={newPostTitle}
+              onChange={(e) => setNewPostTitle(e.target.value)}
+              className="mt-1 p-2 border rounded-md w-full text-gray-800"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              htmlFor="postContent"
+              className="block text-sm font-medium text-gray-600"
+            >
+              Content
+            </label>
+            <textarea
+              id="postContent"
+              name="postContent"
+              value={newPostContent}
+              onChange={(e) => setNewPostContent(e.target.value)}
+              className="mt-1 p-2 border rounded-md w-full text-gray-800"
+              rows={4}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+          >
+            Create Post
+          </button>
+        </form>
       </main>
 
       {/* Footer */}
