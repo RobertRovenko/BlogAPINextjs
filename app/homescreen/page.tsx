@@ -2,13 +2,15 @@
 import React, { useEffect, useState } from "react";
 import { getBlogPosts, createBlogPost } from "../../api/api";
 import Link from "next/link";
+import { auth } from "../../firebase";
+import { useRouter } from "next/navigation";
 
-// Define the type for a blog post
 interface BlogPost {
   id: number;
   title: string;
   content: string;
 }
+
 const BlogPostCard: React.FC<BlogPost> = ({ id, title, content }) => (
   <div
     key={id}
@@ -21,11 +23,11 @@ const BlogPostCard: React.FC<BlogPost> = ({ id, title, content }) => (
 
 const Home: React.FC = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-
   const [newPostTitle, setNewPostTitle] = useState("");
   const [newPostContent, setNewPostContent] = useState("");
-
+  const currentUserEmail = auth.currentUser?.email;
   const [showForm, setShowForm] = useState(false);
+  const router = useRouter();
 
   const toggleForm = () => {
     setShowForm(!showForm);
@@ -33,13 +35,15 @@ const Home: React.FC = () => {
 
   const fetchAndUpdateBlogPosts = async () => {
     try {
-      // Fetch and update the list of blog posts
+      // Fetch and update the list of all blog posts
       const posts = await getBlogPosts();
+
       setBlogPosts(posts);
 
       // Clear the form fields after successful submission
       setNewPostTitle("");
       setNewPostContent("");
+      router.refresh();
     } catch (error) {
       console.error("Error fetching blog posts:", error);
     }
@@ -47,11 +51,22 @@ const Home: React.FC = () => {
 
   const handleCreatePost = async () => {
     try {
-      // Make API request to create new post
-      await createBlogPost({ title: newPostTitle, content: newPostContent });
+      const user = auth.currentUser;
 
-      // Call the function to fetch and update blog posts
-      fetchAndUpdateBlogPosts();
+      if (user) {
+        await createBlogPost({
+          title: newPostTitle,
+          content: newPostContent,
+        });
+
+        // Call the function to fetch and update blog posts
+        fetchAndUpdateBlogPosts();
+
+        // Reload the page after successful post creation
+        router.refresh();
+      } else {
+        console.error("User is not logged in");
+      }
     } catch (error) {
       console.error("Error creating blog post:", error);
     }
@@ -62,12 +77,31 @@ const Home: React.FC = () => {
     fetchAndUpdateBlogPosts();
   }, []);
 
+  useEffect(() => {
+    // Check if the user is not logged in
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        // Redirect to the signup page
+        router.push("/signup");
+      } else {
+        // Call the function to fetch and update blog posts on initial render
+        fetchAndUpdateBlogPosts();
+        router.refresh();
+      }
+    });
+
+    // Clean up the subscription when the component unmounts
+    return () => unsubscribe();
+  }, [router]);
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <header className="bg-gray-800 text-white py-4">
         <div className="container mx-auto">
           <h1 className="text-4xl font-bold">Notes</h1>
+          <p className="text-white">Welcome, {currentUserEmail}</p>
+          <p>UID: {auth.currentUser?.uid}</p>
         </div>
       </header>
 
@@ -75,8 +109,8 @@ const Home: React.FC = () => {
       <main className="container mx-auto mt-8 p-4">
         {blogPosts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {blogPosts.map((post) => (
-              <BlogPostCard key={post.id} {...post} />
+            {blogPosts.map((post, index) => (
+              <BlogPostCard key={post.id || index} {...post} />
             ))}
           </div>
         ) : (
@@ -102,6 +136,8 @@ const Home: React.FC = () => {
                 e.preventDefault();
                 handleCreatePost();
                 toggleForm(); // Close the form after submission
+                fetchAndUpdateBlogPosts();
+                router.refresh();
               }}
               style={{ margin: "20px" }}
             >

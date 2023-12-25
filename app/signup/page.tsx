@@ -1,20 +1,59 @@
 "use client";
-
 import React, { useState } from "react";
-import Link from "next/link";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, UserCredential } from "firebase/auth";
+import { auth } from "../../firebase"; // Import the exported auth instance
+import { useRouter } from "next/navigation";
 
 const Signup: React.FC = () => {
+  // Use WithRouterProps
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
-  const handleSignup = () => {
-    // Perform signup logic here
-    console.log("Signing up with:", email, password);
+  const handleSignup = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    try {
+      const userCredential: UserCredential =
+        await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Access the UID
+      const uid = user.uid;
+
+      console.log("Signup successful with UID:", uid);
+
+      // Redirect to homescreen on successful signup
+      router.replace("/homescreen");
+      console.log("Signup successful with UID:", uid);
+    } catch (error: unknown) {
+      if (error instanceof Error && "message" in error) {
+        // Handle other general errors
+        console.error("Error during signup:", (error as Error).message);
+      } else {
+        // Handle unknown errors
+        console.error("Unknown error during signup:", error);
+      }
+    }
   };
 
-  const handleLogin = () => {
-    // Perform login logic here
-    console.log("Logging in with:", email, password);
+  const handleLogin = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    try {
+      const userCredential: UserCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      console.log("Login successful:", user);
+
+      // Redirect to homescreen on successful login
+      router.push("/homescreen");
+      console.log("Login successful:", user);
+    } catch (error: unknown) {
+      // Handle login errors
+    }
   };
 
   return (
@@ -51,12 +90,15 @@ const Signup: React.FC = () => {
               className="w-full px-3 py-2 border rounded"
             />
             <div className="flex justify-center mt-6">
-              <Link href="/homescreen" className="btn btn-primary mr-4">
+              <button onClick={handleSignup} className="btn btn-primary mr-4">
                 Signup
-              </Link>
-              <Link href="/homescreen" className="btn btn-secondary">
+              </button>
+              <button
+                onClick={(e) => handleLogin(e)}
+                className="btn btn-secondary"
+              >
                 Login
-              </Link>
+              </button>
             </div>
           </form>
         </div>
