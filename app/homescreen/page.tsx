@@ -91,58 +91,65 @@ const Home: React.FC = () => {
           </button>
         </div>
         {showForm && (
-          <form
-            className="bg-white p-4 rounded-lg shadow-md max-w-sm mx-auto"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleCreatePost();
-              toggleForm(); // Close the form after submission
-            }}
-          >
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">
-              Create New Note
-            </h2>
-            <div className="mb-4">
-              <label
-                htmlFor="postTitle"
-                className="block text-sm font-medium text-gray-600"
-              >
-                Title
-              </label>
-              <input
-                type="text"
-                id="postTitle"
-                name="postTitle"
-                value={newPostTitle}
-                onChange={(e) => setNewPostTitle(e.target.value)}
-                className="mt-1 p-2 border rounded-md w-full text-gray-800"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label
-                htmlFor="postContent"
-                className="block text-sm font-medium text-gray-600"
-              >
-                Content
-              </label>
-              <textarea
-                id="postContent"
-                name="postContent"
-                value={newPostContent}
-                onChange={(e) => setNewPostContent(e.target.value)}
-                className="mt-1 p-2 border rounded-md w-full text-gray-800"
-                rows={4}
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+          <div className="flex items-center justify-center fixed inset-0">
+            <div
+              onClick={toggleForm}
+              className="absolute inset-0 bg-gray-800 opacity-50 cursor-pointer"
+            ></div>
+            <form
+              className="bg-white p-4 rounded-lg shadow-md max-w-sm mx-auto z-10"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleCreatePost();
+                toggleForm(); // Close the form after submission
+              }}
+              style={{ margin: "20px" }}
             >
-              Create Note
-            </button>
-          </form>
+              <h2 className="text-2xl font-bold mb-4 text-gray-800">
+                Create New Note
+              </h2>
+              <div className="mb-4">
+                <label
+                  htmlFor="postTitle"
+                  className="block text-sm font-medium text-gray-600"
+                >
+                  Title
+                </label>
+                <input
+                  type="text"
+                  id="postTitle"
+                  name="postTitle"
+                  value={newPostTitle}
+                  onChange={(e) => setNewPostTitle(e.target.value)}
+                  className="mt-1 p-2 border rounded-md w-full text-gray-800"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="postContent"
+                  className="block text-sm font-medium text-gray-600"
+                >
+                  Content
+                </label>
+                <textarea
+                  id="postContent"
+                  name="postContent"
+                  value={newPostContent}
+                  onChange={(e) => setNewPostContent(e.target.value)}
+                  className="mt-1 p-2 border rounded-md w-full text-gray-800"
+                  rows={4}
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              >
+                Create Note
+              </button>
+            </form>
+          </div>
         )}
       </main>
 
@@ -151,8 +158,6 @@ const Home: React.FC = () => {
         <div className="container mx-auto">
           <p className="text-center">© 2023 Made by Robert Falkbäck Rovenko</p>
           <Link href="/signup">
-            {/* Add passHref prop to pass href to child <a> tag */}
-
             <button>Logout</button>
           </Link>
         </div>
